@@ -151,7 +151,7 @@ public class Zombie : MonoBehaviour {
 
         if (isHit)
         {
-            float bulletForce = 0.5f;
+            float bulletForce = .75f;
             GetComponent<Rigidbody>().AddForceAtPosition(hitVec * bulletForce, hitLoc, ForceMode.Impulse);
             isHit = false;
         }
@@ -168,7 +168,7 @@ public class Zombie : MonoBehaviour {
         //body.MoveRotation(Quaternion.LookRotation(towards, Vector3.up));
         body.MovePosition(transform.position + towardsPlane * moveSpeed * Time.deltaTime);
 
-        float deadRatio = 0.7f;
+        float deadRatio = 0.9f;
         if (currHealth <= totalHealth * deadRatio && !isDead)
         {
             Kill();
