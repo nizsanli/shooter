@@ -43,7 +43,6 @@ public class PlayerController : MonoBehaviour {
     // Update is called once per frame
     void Update() {
         float rotSpeed = 300f;
-        float pivSpeed = 0f;
         float moveSpeed = 3f;
 
         if (Input.GetButton("Run"))
@@ -88,68 +87,35 @@ public class PlayerController : MonoBehaviour {
 
             laser.SetPosition(0, weapons[currWeapon].position);
             laser.SetPosition(1, weapons[currWeapon].position + laserDist * weapons[currWeapon].forward);
-            laser.SetWidth(0.007f, 0.007f);
-
-            //Debug.DrawLine(weapons[currWeapon].position, weapons[currWeapon].position + laserDist * weapons[currWeapon].forward, Color.red, 0.1f);
+            laser.SetWidth(0.01f, 0.01f);
 
             rotSpeed *= 0.15f;
-            pivSpeed = 20f;
             moveSpeed *= 0.5f;
-        }
-        else
-        {
-            for (int i = 0; i < weapons.Length; i++)
-            {
-                weapons[i].localRotation = Quaternion.identity;
-                weapons[i].localPosition = new Vector3(0.5f, 0f, 0.75f);
-            }
         }
 
         Rigidbody body = GetComponent<Rigidbody>();
 
-        Vector3 rotate = new Vector3(0f, Input.GetAxisRaw("RS Horizontal"), 0f);
-        rotate *= Time.deltaTime * rotSpeed;
-        body.MoveRotation(Quaternion.Euler(rotate) * transform.rotation);
 
-        Vector3 pivot = new Vector3(Input.GetAxisRaw("RS Vertical"), 0f, 0f);
-        pivot *= Time.deltaTime * pivSpeed;
-        //pivot.x *= 0f;
+        Vector3 move = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical")).normalized;
+        move *= Time.deltaTime;
 
-        Vector3 move = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical"));
-
-        float rotStep = 50f;
-        rotStep *= Time.deltaTime;
         if (isRunning)
         {
-            moveSpeed *= 2.5f;
-            //transform.rotation = transform.rotation * Quaternion.FromToRotation(transform.forward, move.normalized);
-            if (move.sqrMagnitude > 0.1f)
-            {
-                body.MoveRotation(Quaternion.LookRotation(move.normalized, Vector3.up));
-            }
-            rotate = Vector3.zero;
-            pivot = Vector3.zero;
+            moveSpeed *= 4f;
         }
-
-        
-        //move = move.normalized;
-        move *= Time.deltaTime;
         body.MovePosition(transform.position + move * moveSpeed);
 
-        float currAngle = (pistol.localEulerAngles.x + 180) % 360f - 180f;
-        float newAngle = (pistol.localEulerAngles.x + pivot.x + 180f) % 360f - 180f;
-        float maxPivot = 40f;
-        if (newAngle > maxPivot)
+        RaycastHit hitInfo;
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo, 50f))
         {
-            pivot.x = maxPivot - currAngle;
-        }
-        else if (newAngle < -maxPivot)
-        {
-            pivot.x = -maxPivot - currAngle;
-        }
+            Vector3 vecToHit = hitInfo.point - transform.position;
+            body.MoveRotation(Quaternion.LookRotation(new Vector3(vecToHit.x, 0f, vecToHit.z), Vector3.up));
 
-        pistol.RotateAround(transform.position, transform.right, pivot.x);
-        rifle.RotateAround(transform.position, transform.right, pivot.x);
+            for (int i = 0; i < weapons.Length; i++)
+            {
+                weapons[i].rotation = Quaternion.LookRotation(hitInfo.point - weapons[i].position);
+            }
+        }
 
         float jumpForce = 6f;
         if (Input.GetButtonDown("Jump") && feetOnGround)
