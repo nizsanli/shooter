@@ -5,5 +5,6 @@ W,A,S,D: up, left, down, right
 Mouse X/Y: aim player/gun  
 Mouse Left: click to shoot  
 Mouse Right: hold to see laser to assist with aiming  
+Left Shift: hold to run (deactivates gun)  
 
 ![](img/play_test.gif)
